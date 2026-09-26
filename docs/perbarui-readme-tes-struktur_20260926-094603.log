@@ -1,0 +1,7 @@
+Judul: Perbarui README tambah Tes dan Struktur
+Tipe: lainnya
+Waktu: 2026-09-26 09:46:03
+Ringkasan: README belum dokumentasikan test suite dan layout file v0.2.0. Tambah section Tes dan Struktur.
+Ubah:
+- README.md: section Tes (Node 18+, npm test, cakupan 21 test) dan Struktur (peta file plugin/hooks/test).
+Uji: npm test 21/21 lolos. README hanya markdown, tidak sentuh kode.

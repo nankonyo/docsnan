@@ -151,6 +151,34 @@ Batasan: bila paket belum terbit di npm dan offline/tanpa tags, updater
 lapor `latest unknown` dan pertahankan install lama. CLI langsung:
 `node <docsnan>/hooks/docsnan-update.js [version|check|update]`.
 
+## Tes
+
+Butuh Node 18+. Tanpa deps tambahan.
+
+```bash
+npm test
+```
+
+21 test via `node:test`: routing perintah (bare/on/off/update/version),
+deteksi versi, up-to-date, gagal update, intent riwayat ID+EN, seleksi
+log, newest-first, relevansi kata kunci, `docs/` kosong, log rusak,
+200 file, dan request coding biasa yang tak picu retrieval.
+
+## Struktur
+
+```text
+.opencode/plugins/docsnan.mjs  # plugin: command, skills, injeksi prompt
+.opencode/command/docsnan.md    # template /docsnan
+skills/docsnan/SKILL.md         # aturan log + riwayat (sumber injeksi)
+hooks/docsnan-config.js         # mode on/off
+hooks/docsnan-instructions.js   # bangun teks injeksi
+hooks/docsnan-command.js        # router bare/on/off/update/version
+hooks/docsnan-retrieve.js       # retrieval log deterministik + CLI
+hooks/docsnan-update.js         # cek/update versi + CLI
+test/                           # node:test, tanpa framework
+docs/                           # contoh log eksekusi
+```
+
 ## Lisensi
 
 MIT. Lihat [LICENSE](LICENSE).
