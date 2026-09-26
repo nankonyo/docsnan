@@ -1,0 +1,12 @@
+Judul: Docsnan jadi memori kerja + /docsnan update
+Tipe: fitur
+Waktu: 2026-09-26 09:38:30
+Ringkasan: Log docs/ kini bisa dibaca balik sebagai riwayat kerja ringan. Tambah /docsnan update dan /docsnan version. Versi 0.1.0 -> 0.2.0.
+Ubah:
+- hooks/docsnan-retrieve.js (baru): deteksi intent riwayat ID+EN, ranking newest-first via nama/judul/tipe/kata kunci/file Ubah, offline tanpa vector DB.
+- hooks/docsnan-update.js (baru): versi dari package.json, latest via npm view fallback GitHub tags, update via git pull --ff-only (tolak worktree kotor) atau npm install, verifikasi hasil.
+- hooks/docsnan-command.js (baru): route bare/on/off/update/version tanpa ambigu.
+- .opencode/plugins/docsnan.mjs: pakai router; bare lapor status, update/version tak ubah mode.
+- skills/docsnan/SKILL.md + README.md: dokumentasi alur riwayat dan update.
+- test/: 21 test node:test tanpa deps baru.
+Uji: npm test 21/21 lolos. Plugin load + routing before-hook diverifikasi langsung (version/update/unknown/on/off/bare). CLI retrieve/update smoke test ok.

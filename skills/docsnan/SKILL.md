@@ -76,3 +76,30 @@ Uji: POST /login tanpa password balas 400. npm test lolos.
 - `/docsnan off` hentikan kewajiban sampai `/docsnan on` lagi.
 - Mode default `on`. Env `DOCSNAN_DEFAULT_MODE=off` ubah default.
 - Dokumentasi tulis normal, jelas. Bukan gaya caveman/ponytail.
+
+## Riwayat (baca log lama, token hemat)
+
+Untuk tugas coding biasa, bagian ini dormant. Jangan sentuh `docs/`.
+
+Hanya aktif bila permintaan user soal kerja lampau: perubahan terbaru,
+kemarin, terakhir, riwayat, "sudah difix?", "pernah dikerjakan?",
+"implementasi sebelumnya", "apa yang agent sebelumnya lakukan",
+"kenapa file ini diubah", atau padanan EN
+(what changed/recently, previous task, last session, did we already).
+
+Alur wajib (ringan, offline, tanpa vector DB):
+
+1. `ls docs/*.log` terbaru dulu (nama `<slug>_YYYYMMDD-HHmmss.log`
+   sudah terurut waktu). Bila folder kosong: jawab terus terang,
+   lanjut ke kode/git.
+2. Pilih maks 3 log relevan via cocok nama/judul/tipe/kata kunci/file
+   di field Ubah. Contoh: tanya auth → prioritaskan slug/judul/tipe
+   berisi `auth|login`.
+3. Baca hanya log terpilih itu. Jangan load semua log ke konteks.
+4. Bila log tak cukup, baru cek source code lalu git history.
+5. Jangan klaim kejadian historis hanya karena kode sekarang ada
+   implementasinya. Bedakan sumber jawaban: log docsnan vs
+   kode saat ini vs git history.
+
+Opsional: `node <docsnan>/hooks/docsnan-retrieve.js "<pertanyaan>" --dir docs --limit 3`
+lakukan langkah 1-2 deterministik (deteksi intent + ranking newest-first).

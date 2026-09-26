@@ -17,6 +17,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const { getDocsnanInstructions } = require('../../hooks/docsnan-instructions');
 const { getDefaultMode, normalizePersistedMode } = require('../../hooks/docsnan-config');
+const { routeCommand } = require('../../hooks/docsnan-command');
+const { getInstalledVersion, checkUpdate, performUpdate } = require('../../hooks/docsnan-update');
 
 // ponytail: simpan state beside opencode config, sama seperti .ponytail-active.
 const statePath = path.join(
@@ -79,12 +81,32 @@ export default async ({ client } = {}) => {
     },
 
     // ponytail: mode berlaku mulai pesan berikut, bukan pesan ini.
+    // routeCommand bedakan: bare/on/off/update/version tanpa ambigu.
+    // Bare = lapor status, bukan ubah mode. update/version tak ubah mode.
     'command.execute.before': async (input) => {
       if (!input || input.command !== 'docsnan') return;
-      const arg = normalizePersistedMode((input.arguments || '').trim());
-      const mode = arg || getDefaultMode();
-      writeMode(mode);
-      log('info', 'docsnan ' + mode);
+      const routed = routeCommand(input.arguments || '');
+      if (routed.action === 'mode') {
+        writeMode(routed.mode);
+        log('info', 'docsnan ' + routed.mode);
+      } else if (routed.action === 'status') {
+        log('info', 'docsnan ' + readMode() + ' (v' + (getInstalledVersion() || '?') + ')');
+      } else if (routed.action === 'version') {
+        log('info', 'docsnan v' + (getInstalledVersion() || '?'));
+      } else if (routed.action === 'update') {
+        const before = checkUpdate();
+        if (!before.latest) {
+          log('info', 'docsnan v' + (before.installed || '?') + ': latest unknown (offline/unpublished), kept.');
+        } else if (!before.needed) {
+          log('info', 'docsnan already up to date (' + before.installed + ').');
+        } else {
+          log('info', 'docsnan update ' + before.installed + ' -> ' + before.latest + ' (' + before.source + ')');
+          const r = performUpdate();
+          log(r.ok ? 'info' : 'error', r.ok ? r.message : 'docsnan update failed: ' + r.error);
+        }
+      } else {
+        log('info', 'docsnan: unknown arg "' + routed.arg + '". Use on|off|update|version.');
+      }
     },
   };
 };

@@ -77,8 +77,11 @@ dipakai banyak project, isi path absolut ke file `.mjs` (ia temukan
 
 | Perintah | Efek |
 |---|---|
+| `/docsnan` | Lapor mode + versi, tanpa ubah apa pun |
 | `/docsnan on` | Nyalakan kewajiban log (default) |
 | `/docsnan off` | Matikan sampai dinyalakan lagi |
+| `/docsnan version` | Lapor versi terpasang (dari `package.json`) |
+| `/docsnan update` | Cek versi terbaru, update bila ada, verifikasi hasil |
 
 Env override default: `DOCSNAN_DEFAULT_MODE=off`.
 
@@ -94,6 +97,59 @@ Ringkasan: <masalah/permintaan, 1-2 kalimat>
 Ubah: <file/fungsi utama + kenapa, bullet pendek>
 Uji: <cara uji + hasil, 1-2 baris>
 ```
+
+Format lama tetap terbaca. Field tak dikenal diabaikan, tak pernah crash.
+
+## Riwayat (log sebagai memori kerja)
+
+Log `docs/` juga jadi memori kerja ringan. Saat user tanya soal kerja
+lampau ("What did we change recently in authentication?", "Apa yang
+sudah difix kemarin?"), agent cek log dulu sebelum bongkar source tree:
+
+```text
+Search docs/*.log
+↓
+Find relevant authentication logs
+↓
+Sort newest first
+↓
+Read relevant logs
+↓
+Summarize the changes
+```
+
+Aturan: deteksi intent riwayat dulu (recent/previous/last/yesterday /
+terakhir/kemarin/riwayat/sudah difix). Bila bukan pertanyaan riwayat,
+bagian ini dormant — `docs/` tak disentuh. Bila ya: `ls docs/*.log`
+terbaru dulu, pilih maks 3 paling relevan (cocok nama/judul/tipe/kata
+kunci/file di field Ubah), baca hanya itu. Folder kosong: jawab terus
+terang, lanjut ke kode/git. Tak cukup: baru cek source lalu git history.
+Jangan klaim riwayat hanya karena kode sekarang ada implementasinya —
+bedakan sumber: log docsnan vs kode saat ini vs git history.
+
+Tanpa vector DB, offline. Helper deterministik opsional:
+
+```bash
+node <docsnan>/hooks/docsnan-retrieve.js "What changed in auth?" --dir docs --limit 3
+```
+
+## Update
+
+`/docsnan update` update Docsnan dari dalam OpenCode:
+
+1. Baca versi terpasang dari `package.json` (satu-satunya sumber versi).
+2. Cek versi terbaru: registry npm (`npm view docsnan version`),
+   fallback GitHub tags. Tanpa `curl|sh`, tanpa perintah remote arbitrer.
+3. Sama: lapor up-to-date. Beda: tunjukkan lama → baru + sumbernya,
+   update via jalur install yang sama — checkout git: `git pull
+   --ff-only` (tolak bila worktree kotor); install npm:
+   `npm install docsnan@latest`. Modifikasi user tak ditimpa diam-diam.
+4. Verifikasi versi hasil, lapor singkat. Gagal: install lama dipertahankan
+   + error ringkas, tak tinggalkan plugin setengah rusak.
+
+Batasan: bila paket belum terbit di npm dan offline/tanpa tags, updater
+lapor `latest unknown` dan pertahankan install lama. CLI langsung:
+`node <docsnan>/hooks/docsnan-update.js [version|check|update]`.
 
 ## Lisensi
 
