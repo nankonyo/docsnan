@@ -1,0 +1,9 @@
+Judul: Push docsnan ke github + README gaya ponytail
+Tipe: lainnya
+Waktu: 2026-09-26 07:25:31
+Ringkasan: Push repo ke github.com/nankonyo/docsnan + README baru pakai gambar docsman.png ala README ponytail.
+Ubah:
+- assets/docsnan.png: salin dari Downloads/docsman.png.
+- README.md: header logo tengah, tagline, badge, contoh log, cara kerja, install, perintah, struktur.
+- .gitignore: node_modules. Remote awal https gagal auth, ganti ssh.
+Uji: git push via ssh lolos (main -> main). README render cek manual di github.
