@@ -1,0 +1,9 @@
+Judul: Batas skip obrolan dan plan tanpa eksekusi
+Tipe: refactor
+Waktu: 2026-09-26 07:10:16
+Ringkasan: Aturan lama tulis log untuk semua tugas tanpa kecuali. Kini log hanya saat eksekusi.
+Ubah:
+- skills/docsnan/SKILL.md: tambah Kapan wajib log vs Kapan skip + aturan putus.
+- hooks/docsnan-instructions.js: fallback ikut aturan skip.
+- .opencode/command/docsnan.md, AGENTS.md, README.md: samakan redaksi eksekusi saja.
+Uji: node --check 3 file lolos, instruksi on sertakan Kapan wajib/skip + format nama, off kosong.

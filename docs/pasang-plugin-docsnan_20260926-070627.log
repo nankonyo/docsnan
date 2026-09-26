@@ -1,0 +1,9 @@
+Judul: Pasang plugin docsnan ke opencode
+Tipe: lainnya
+Waktu: 2026-09-26 07:06:27
+Ringkasan: Daftarkan plugin lokal docsnan ke opencode.json + opencode.jsonc agar aturan 1 tugas = 1 file docs aktif.
+Ubah:
+- .config/opencode/opencode.json: tambah path absolut docsnan.mjs ke array plugin.
+- .config/opencode/opencode.jsonc: tambah path yang sama.
+- .config/opencode/.docsnan-active: set on.
+Uji: import plugin node lolos (command docsnan terdaftar, skills path terdaftar, injeksi DOCSNAN true), toggle off/on persist ok, kedua config valid JSON.
