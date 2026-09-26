@@ -1,0 +1,7 @@
+Judul: Rapikan README hapus bagian struktur
+Tipe: lainnya
+Waktu: 2026-09-26 07:46:53
+Ringkasan: Hapus paragraf struktur ala ponytail + section Struktur file tree dari README agar fokus ke guna docsnan.
+Ubah:
+- README.md: hapus paragraf SKILL/hooks/.opencode dan section Struktur.
+Uji: cek README tidak lagi muat kata Struktur file tree, git push lolos.

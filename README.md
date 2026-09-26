@@ -22,11 +22,6 @@ config — ia wajib menutupnya dengan 1 file log di folder `docs/`
 project tersebut. Satu eksekusi, satu file. Obrolan biasa dan plan
 tanpa eksekusi tidak dicatat.
 
-Struktur plugin persis [ponytail](https://github.com/DietrichGebert/ponytail):
-`SKILL.md` sebagai sumber tunggal, `hooks/` sebagai builder + config,
-`.opencode/plugins/` sebagai injeksi system prompt tiap turn,
-`.opencode/command/` sebagai slash command.
-
 ## Contoh hasil
 
 Selesai fix login, agent menulis `docs/fix-login_20260926-143022.log`:
@@ -98,22 +93,6 @@ Waktu: <YYYY-MM-DD HH:MM:SS lokal>
 Ringkasan: <masalah/permintaan, 1-2 kalimat>
 Ubah: <file/fungsi utama + kenapa, bullet pendek>
 Uji: <cara uji + hasil, 1-2 baris>
-```
-
-## Struktur
-
-```
-docsnan/
-├── package.json
-├── AGENTS.md
-├── README.md
-├── LICENSE
-├── assets/docsnan.png
-├── .opencode/plugins/docsnan.mjs
-├── .opencode/command/docsnan.md
-├── skills/docsnan/SKILL.md
-├── hooks/docsnan-config.js
-└── hooks/docsnan-instructions.js
 ```
 
 ## Lisensi
