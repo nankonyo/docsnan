@@ -1,0 +1,13 @@
+Judul: Improve retrieval Files Tags dan why-was fix
+Tipe: fitur
+Waktu: 2026-09-27T10:30:15+07:00
+Files: hooks/docsnan-retrieve.js, skills/docsnan/SKILL.md, README.md, test/retrieve.test.js, package.json
+Tags: retrieval, files, tags, why-was, parser
+Ringkasan: Log lama susah dilacak AI untuk query file spesifik. Why-was <file> dormant, tanpa field mesin Files/Tags, kandidat baca hanya 20.
+Ubah:
+- hooks/docsnan-retrieve.js: pola why (was|were|did) + (chang|fix|updat|modif), parse alias EN + Files/Tags, skor Files +5 Tags +4, kandidat 20 -> 50, stopwords log/docs.
+- skills/docsnan/SKILL.md: format 6 wajib + Files/Tags opsional, Waktu ISO, Ubah wajib path: alasan, Tipe tambah config|docs, contoh + skor baru.
+- README.md: contoh + Isi log + Riwayat samakan format baru, Tes 21 -> 25.
+- test/retrieve.test.js: 4 test baru parse Files/Tags, bobot Files, why-was file, recall log lama di luar 20.
+- package.json, .opencode/command/docsnan.md, hooks/docsnan-instructions.js: versi 0.2.0 -> 0.3.0, redaksi samakan.
+Uji: npm test 25/25 lolos. CLI Why was skills/... changed kini trigger dan rank batas-skip skor 4, What did we change in README rank benar 9/2/9.

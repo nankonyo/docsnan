@@ -3,14 +3,14 @@
 //
 // Two-phase, low-token:
 //   1. rank by filename/timestamp (no file read)
-//   2. read only top candidates to score title/type/summary/changed
+//   2. read only top candidates to score files/tags/title/type/changed/summary
 // Agent then reads only the returned top N files.
 
 const fs = require('fs');
 const path = require('path');
 
 const DEFAULT_LIMIT = 3;
-const MAX_CANDIDATE_READ = 20;
+const MAX_CANDIDATE_READ = 50;
 
 // Words that mark a request as "about past work", ID + EN.
 const HISTORY_PATTERNS = [
@@ -28,7 +28,7 @@ const HISTORY_PATTERNS = [
   /previous (task|implementation|agent|work|session|change|fix)/i,
   /last (session|task|change|update|fix)/i,
   /recent (changes|updates|fixes|work)/i,
-  /why was this file changed/i,
+  /why (was|were|did) .* (chang|fix|updat|modif)/i,
 ];
 
 // Small stopword set so generic words don't outrank real keywords.
@@ -38,7 +38,8 @@ const STOPWORDS = new Set(
     'adalah,yaitu,yakni,yg,tsb,the,a,an,of,to,in,on,for,was,were,what,did,have,has,been,' +
     'show,tell,about,recent,recently,latest,last,previous,already,ever,' +
     'change,changed,changes,update,updated,updates,work,worked,working,' +
-    'task,tasks,session,sessions,agent,agents,implementation,implementations,file,files')
+    'task,tasks,session,sessions,agent,agents,implementation,implementations,file,files,' +
+    'log,logs,docs,docsnan,please,find,get,give,list')
     .split(','),
 );
 
@@ -64,26 +65,35 @@ function timestampFromFilename(filename) {
   return m ? Number(m[1] + m[2]) : 0;
 }
 
-// Tolerant 6-field parse. Never throws; malformed logs yield empty fields.
+// Tolerant 6+2-field parse. Never throws; malformed logs yield empty fields.
+// Format lama (6 field ID saja) tetap terbaca. Alias EN + Files/Tags opsional.
 function parseLogContent(text) {
-  const out = { title: '', type: '', time: '', summary: '', changed: [], test: '', raw: String(text || '') };
+  const out = { title: '', type: '', time: '', summary: '', changed: [], files: [], tags: [], test: '', raw: String(text || '') };
   if (!text || typeof text !== 'string') return out;
   const lines = text.split(/\r?\n/);
   const changed = [];
   let section = null;
   for (const line of lines) {
     let m;
-    if ((m = line.match(/^\s*Judul\s*:\s*(.*)\s*$/i))) { out.title = m[1]; section = null; continue; }
-    if ((m = line.match(/^\s*Tipe\s*:\s*(.*)\s*$/i))) { out.type = m[1].trim().toLowerCase(); section = null; continue; }
-    if ((m = line.match(/^\s*Waktu\s*:\s*(.*)\s*$/i))) { out.time = m[1]; section = null; continue; }
-    if ((m = line.match(/^\s*Ringkasan\s*:\s*(.*)\s*$/i))) { out.summary = m[1]; section = null; continue; }
-    if (/^\s*Ubah\s*:/i.test(line)) {
-      const rest = line.replace(/^\s*Ubah\s*:\s*/i, '');
+    if ((m = line.match(/^\s*(Judul|Title)\s*:\s*(.*)\s*$/i))) { out.title = m[2]; section = null; continue; }
+    if ((m = line.match(/^\s*(Tipe|Type)\s*:\s*(.*)\s*$/i))) { out.type = m[2].trim().toLowerCase(); section = null; continue; }
+    if ((m = line.match(/^\s*(Waktu|Time)\s*:\s*(.*)\s*$/i))) { out.time = m[2]; section = null; continue; }
+    if ((m = line.match(/^\s*(Ringkasan|Summary)\s*:\s*(.*)\s*$/i))) { out.summary = m[2]; section = null; continue; }
+    if ((m = line.match(/^\s*(Files?|Berkas)\s*:\s*(.*)\s*$/i))) {
+      out.files = m[2].split(',').map((s) => s.trim()).filter(Boolean);
+      section = null; continue;
+    }
+    if ((m = line.match(/^\s*(Tags?|Label)\s*:\s*(.*)\s*$/i))) {
+      out.tags = m[2].split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+      section = null; continue;
+    }
+    if (/^\s*(Ubah|Changed?)\s*:/i.test(line)) {
+      const rest = line.replace(/^\s*(Ubah|Changed?)\s*:\s*/i, '');
       if (rest) changed.push(rest.replace(/^[-*]\s*/, ''));
       section = 'changed';
       continue;
     }
-    if ((m = line.match(/^\s*Uji\s*:\s*(.*)\s*$/i))) { out.test = m[1]; section = null; continue; }
+    if ((m = line.match(/^\s*(Uji|Test)\s*:\s*(.*)\s*$/i))) { out.test = m[2]; section = null; continue; }
     if (section === 'changed') {
       const bullet = line.match(/^\s*[-*]\s*(.+)\s*$/);
       if (bullet) changed.push(bullet[1]);
@@ -96,7 +106,7 @@ function parseLogContent(text) {
 }
 
 function scoreLog(meta, queryTokens) {
-  // meta: { file, slug, title, type, summary, changed }
+  // meta: { file, slug, title, type, summary, changed, files, tags }
   if (queryTokens.length === 0) return 1; // generic "what changed recently" -> newest wins
   const hay = {
     file: String(meta.slug || '').toLowerCase(),
@@ -104,9 +114,13 @@ function scoreLog(meta, queryTokens) {
     type: String(meta.type || '').toLowerCase(),
     summary: String(meta.summary || '').toLowerCase(),
     changed: (meta.changed || []).join('\n').toLowerCase(),
+    files: (meta.files || []).join(' ').toLowerCase(),
+    tags: meta.tags || [],
   };
   let score = 0;
   for (const tok of queryTokens) {
+    if (hay.files.includes(tok)) score += 5;
+    if (hay.tags.includes(tok)) score += 4;
     if (hay.file.includes(tok)) score += 3;
     if (hay.title.includes(tok)) score += 3;
     if (hay.changed.includes(tok)) score += 2;
@@ -137,10 +151,10 @@ function selectLogs({ dir = 'docs', query = '', limit = DEFAULT_LIMIT } = {}) {
   const tokens = tokenize(query);
   const candidates = listed.slice(0, MAX_CANDIDATE_READ);
   const scored = candidates.map((c, order) => {
-    let meta = { slug: c.name.replace(/_\d{8}-\d{6}\.log$/, ''), title: '', type: '', summary: '', changed: [] };
+    let meta = { slug: c.name.replace(/_\d{8}-\d{6}\.log$/, ''), title: '', type: '', summary: '', changed: [], files: [], tags: [] };
     try {
       const parsed = parseLogContent(fs.readFileSync(c.file, 'utf8'));
-      meta = { ...meta, title: parsed.title, type: parsed.type, summary: parsed.summary, changed: parsed.changed };
+      meta = { ...meta, title: parsed.title, type: parsed.type, summary: parsed.summary, changed: parsed.changed, files: parsed.files, tags: parsed.tags };
     } catch (e) { /* unreadable -> filename-only rank */ }
     return { ...c, order, meta, score: scoreLog(meta, tokens) };
   });

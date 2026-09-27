@@ -14,7 +14,7 @@ function getFallbackInstructions() {
     'Buat folder docs bila belum ada. Jangan timpa log lama.\n' +
     'Hanya saat eksekusi (ada file diubah atau perintah build/test/deploy dijalankan). ' +
     'Skip untuk obrolan biasa, tanya jawab, plan tanpa eksekusi, dan baca kode tanpa perubahan.\n' +
-    'Isi singkat, poin penting saja: Judul, Tipe, Waktu, Ringkasan, Ubah, Uji.';
+    'Isi singkat, poin penting saja: Judul, Tipe, Waktu ISO, Files, Tags, Ringkasan, Ubah (`path: alasan`), Uji.';
 }
 
 function getDocsnanInstructions(mode) {

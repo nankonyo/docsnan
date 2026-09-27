@@ -48,23 +48,32 @@ file, 1 per eksekusi. Tanpa eksekusi = tanpa file.
 
 ## Isi (singkat, poin penting, lengkap, mudah dipahami)
 
-Tulis 6 field ini, 1-3 baris per field. Tanpa essay.
+Tulis 6 field wajib + 2 opsional mesin ini, 1-3 baris per field. Tanpa essay.
 
 ```
 Judul: <judul tugas>
-Tipe: <fitur|fix|debug|refactor|lainnya>
-Waktu: <YYYY-MM-DD HH:MM:SS lokal>
+Tipe: <fitur|fix|debug|refactor|config|docs|lainnya>
+Waktu: <YYYY-MM-DDTHH:MM:SS+07:00, ISO lokal; format lama spasi tetap terbaca>
+Files: <path koma, cth: auth/login.js, README.md> (opsional, disarankan bila sentuh file)
+Tags: <kata kunci koma lowercase, cth: auth, login> (opsional, disarankan)
 Ringkasan: <apa masalah / permintaan, 1-2 kalimat>
 Ubah: <file/fungsi utama yang diubah + kenapa, bullet pendek>
 Uji: <cara uji + hasil, 1-2 baris>
 ```
+
+Aturan Ubah: tiap bullet wajib mulai `path: alasan`.
+Contoh: `- auth/login.js: cek password kosong sebelum hash, return 400.`
+Alias EN diterima parser (`Title/Type/Time/Summary/Changed/Test/Files/Tags`).
+Format lama tanpa `Files/Tags` tetap terbaca. Field tak dikenal diabaikan, tak pernah crash.
 
 Contoh:
 
 ```
 Judul: Fix login null saat password kosong
 Tipe: fix
-Waktu: 2026-09-26 14:30:22
+Waktu: 2026-09-26T14:30:22+07:00
+Files: auth/login.js
+Tags: auth, login
 Ringkasan: Login crash saat password kosong. Tambah guard kosong.
 Ubah:
 - auth/login.js: cek password kosong sebelum hash, return 400.
@@ -84,7 +93,7 @@ Untuk tugas coding biasa, bagian ini dormant. Jangan sentuh `docs/`.
 Hanya aktif bila permintaan user soal kerja lampau: perubahan terbaru,
 kemarin, terakhir, riwayat, "sudah difix?", "pernah dikerjakan?",
 "implementasi sebelumnya", "apa yang agent sebelumnya lakukan",
-"kenapa file ini diubah", atau padanan EN
+"kenapa file ini diubah", "why was auth/login.js changed", atau padanan EN
 (what changed/recently, previous task, last session, did we already).
 
 Alur wajib (ringan, offline, tanpa vector DB):
@@ -92,9 +101,10 @@ Alur wajib (ringan, offline, tanpa vector DB):
 1. `ls docs/*.log` terbaru dulu (nama `<slug>_YYYYMMDD-HHmmss.log`
    sudah terurut waktu). Bila folder kosong: jawab terus terang,
    lanjut ke kode/git.
-2. Pilih maks 3 log relevan via cocok nama/judul/tipe/kata kunci/file
-   di field Ubah. Contoh: tanya auth → prioritaskan slug/judul/tipe
-   berisi `auth|login`.
+2. Pilih maks 3 log relevan via cocok `Files` (+5) / `Tags` (+4) /
+   nama/judul (+3) / file di `Ubah` (+2) / `Tipe` exact (+2) / Ringkasan (+1).
+   Contoh: tanya auth → prioritaskan `Files/Tags` berisi `auth|login`.
+   Baca maks 50 kandidat terbaru untuk skor, return 3 teratas.
 3. Baca hanya log terpilih itu. Jangan load semua log ke konteks.
 4. Bila log tak cukup, baru cek source code lalu git history.
 5. Jangan klaim kejadian historis hanya karena kode sekarang ada

@@ -18,6 +18,6 @@ Switch docsnan. Subcommand = $ARGUMENTS (satu kata, case-insensitive).
   Detail: `node <docsnan>/hooks/docsnan-update.js [version|check|update]`.
 - Selain itu: abaikan, beri tahu pemakaian valid.
 
-When on: tutup setiap eksekusi pekerjaan (fitur, fix, debug, refactor, config, lainnya) dengan 1 file baru docs/<slug>_YYYYMMDD-HHmmss.log. Buat folder docs bila belum ada. Skip obrolan biasa, tanya jawab, plan tanpa eksekusi, dan baca kode tanpa perubahan. Isi singkat 6 field: Judul, Tipe, Waktu, Ringkasan, Ubah, Uji.
+When on: tutup setiap eksekusi pekerjaan (fitur, fix, debug, refactor, config, docs, lainnya) dengan 1 file baru docs/<slug>_YYYYMMDD-HHmmss.log. Buat folder docs bila belum ada. Skip obrolan biasa, tanya jawab, plan tanpa eksekusi, dan baca kode tanpa perubahan. Isi singkat 6 wajib + 2 opsional mesin: Judul, Tipe, Waktu ISO, Files, Tags, Ringkasan, Ubah (`path: alasan`), Uji.
 
 Riwayat: untuk pertanyaan soal kerja lampau (recent/previous/last/yesterday/terakhir/kemarin/riwayat/sudah difix), cari docs/*.log terbaru dulu, baca maks 3 yang relevan, jangan load semua log. Detail di SKILL.md bagian Riwayat.

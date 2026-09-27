@@ -29,7 +29,9 @@ Selesai fix login, agent menulis `docs/fix-login_20260926-143022.log`:
 ```
 Judul: Fix login null saat password kosong
 Tipe: fix
-Waktu: 2026-09-26 14:30:22
+Waktu: 2026-09-26T14:30:22+07:00
+Files: auth/login.js
+Tags: auth, login
 Ringkasan: Login crash saat password kosong. Tambah guard kosong.
 Ubah:
 - auth/login.js: cek password kosong sebelum hash, return 400.
@@ -87,14 +89,16 @@ Env override default: `DOCSNAN_DEFAULT_MODE=off`.
 
 ## Isi log
 
-Singkat, poin penting saja, 6 field. 1–3 baris per field, tanpa essay:
+Singkat, poin penting saja, 6 field wajib + 2 opsional mesin. 1–3 baris per field, tanpa essay:
 
 ```
 Judul: <judul tugas>
-Tipe: <fitur|fix|debug|refactor|lainnya>
-Waktu: <YYYY-MM-DD HH:MM:SS lokal>
+Tipe: <fitur|fix|debug|refactor|config|docs|lainnya>
+Waktu: <YYYY-MM-DDTHH:MM:SS+07:00 ISO lokal; format lama spasi tetap terbaca>
+Files: <path koma, cth: auth/login.js> (opsional, disarankan)
+Tags: <kata kunci koma lowercase> (opsional, disarankan)
 Ringkasan: <masalah/permintaan, 1-2 kalimat>
-Ubah: <file/fungsi utama + kenapa, bullet pendek>
+Ubah: <file/fungsi utama + kenapa, bullet `path: alasan`>
 Uji: <cara uji + hasil, 1-2 baris>
 ```
 
@@ -119,10 +123,12 @@ Summarize the changes
 ```
 
 Aturan: deteksi intent riwayat dulu (recent/previous/last/yesterday /
-terakhir/kemarin/riwayat/sudah difix). Bila bukan pertanyaan riwayat,
+terakhir/kemarin/riwayat/sudah difix, plus `why was <file> changed`).
+Bila bukan pertanyaan riwayat,
 bagian ini dormant — `docs/` tak disentuh. Bila ya: `ls docs/*.log`
-terbaru dulu, pilih maks 3 paling relevan (cocok nama/judul/tipe/kata
-kunci/file di field Ubah), baca hanya itu. Folder kosong: jawab terus
+terbaru dulu, pilih maks 3 paling relevan (skor `Files` +5 / `Tags` +4 /
+nama/judul +3 / file di `Ubah` +2 / `Tipe` exact +2 / Ringkasan +1,
+baca maks 50 kandidat terbaru), baca hanya itu. Folder kosong: jawab terus
 terang, lanjut ke kode/git. Tak cukup: baru cek source lalu git history.
 Jangan klaim riwayat hanya karena kode sekarang ada implementasinya —
 bedakan sumber: log docsnan vs kode saat ini vs git history.
@@ -159,10 +165,11 @@ Butuh Node 18+. Tanpa deps tambahan.
 npm test
 ```
 
-21 test via `node:test`: routing perintah (bare/on/off/update/version),
+25 test via `node:test`: routing perintah (bare/on/off/update/version),
 deteksi versi, up-to-date, gagal update, intent riwayat ID+EN, seleksi
 log, newest-first, relevansi kata kunci, `docs/` kosong, log rusak,
-200 file, dan request coding biasa yang tak picu retrieval.
+200 file, Files/Tags + alias EN, bobot Files, why-was file, recall log lama,
+dan request coding biasa yang tak picu retrieval.
 
 ## Struktur
 

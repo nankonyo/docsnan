@@ -120,3 +120,42 @@ test('200 logs: fast, limited, newest-first', () => {
   assert.ok(Date.now() - t0 < 5000, 'must stay fast');
   assert.equal(hits.length, 3);
 });
+
+// --- v0.3: Files/Tags parse, EN aliases, old format stays readable ---
+test('parse Files/Tags + EN aliases; old logs stay readable', () => {
+  const p1 = parseLogContent('Judul: A\nTipe: fix\nWaktu: 2026-09-26 10:00:00\nRingkasan: R.\nUbah:\n- a.js: x.\nUji: ok.\n');
+  assert.deepEqual(p1.files, []);
+  assert.deepEqual(p1.tags, []);
+  const p2 = parseLogContent('Title: B\nType: config\nTime: 2026-09-26T10:00:00+07:00\nFiles: auth/login.js, README.md\nTags: Auth, Login\nSummary: S.\nChanged:\n- auth/login.js: guard.\nTest: ok.\n');
+  assert.equal(p2.title, 'B');
+  assert.equal(p2.type, 'config');
+  assert.deepEqual(p2.files, ['auth/login.js', 'README.md']);
+  assert.deepEqual(p2.tags, ['auth', 'login']);
+});
+
+// --- v0.3: Files weight beats title ---
+test('Files exact match outranks title-only match', () => {
+  const dir = mktmp();
+  write(dir, 'alpha_20260926-100000.log', 'Judul: auth overhaul\nTipe: fix\nWaktu: 2026-09-26 10:00:00\nRingkasan: umum.\nUbah:\n- other.js: x.\nUji: ok.\n');
+  write(dir, 'beta_20260926-110000.log', 'Judul: Sesuatu umum\nTipe: fix\nWaktu: 2026-09-26 11:00:00\nFiles: auth/login.js\nTags: auth\nRingkasan: umum.\nUbah:\n- auth/login.js: guard.\nUji: ok.\n');
+  const hits = selectLogs({ dir, query: 'What did we change in auth/login.js?', limit: 2 });
+  assert.equal(hits[0].name.startsWith('beta_'), true);
+});
+
+// --- v0.3: why-was file query triggers ---
+test('why-was file query is history', () => {
+  assert.equal(isHistoryQuery('Why was auth/login.js changed?'), true);
+  assert.equal(isHistoryQuery('Why was SKILL.md modified?'), true);
+  assert.equal(isHistoryQuery('Why was this file changed?'), true);
+});
+
+// --- v0.3: old log beyond 20 still found via Files ---
+test('specific old log beyond 20 newest still found', () => {
+  const dir = mktmp();
+  for (let i = 0; i < 40; i++) {
+    write(dir, `noise-${String(i).padStart(2, '0')}_20260926-100000.log`, LOG(`Noise ${i}`, 'lainnya', `noise${i}.js.`));
+  }
+  write(dir, 'ancient-auth_20260901-080000.log', 'Judul: Ancient auth\nTipe: fix\nWaktu: 2026-09-01 08:00:00\nFiles: auth/ancient.js\nTags: auth\nRingkasan: lama.\nUbah:\n- auth/ancient.js: guard lama.\nUji: ok.\n');
+  const hits = selectLogs({ dir, query: 'What did we change in auth ancient?', limit: 3 });
+  assert.ok(hits.some((h) => h.name.startsWith('ancient-auth')));
+});

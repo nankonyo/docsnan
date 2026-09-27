@@ -1,0 +1,10 @@
+Judul: Push repo dan sync plugin opencode lokal
+Tipe: config
+Waktu: 2026-09-27T10:31:21+07:00
+Files: package.json, opencode.json
+Tags: push, plugin, opencode, sync
+Ringkasan: Push v0.3.0 ke github dan pastikan plugin docsnan di opencode lokal pakai kode terbaru.
+Ubah:
+- git: commit 7 file v0.3.0 + 2 log docs, push main -> origin via ssh.
+- opencode lokal: plugin path absolut ke checkout, tanpa install ulang, verifikasi load + retrieval.
+Uji: npm test 25/25 lolos. Import plugin node lolos, CLI retrieve trigger why-was. git push lolos.
