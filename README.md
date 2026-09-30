@@ -18,13 +18,13 @@
 AI lupa apa yang ia kerjakan kemarin. Docsnan menghentikannya.
 
 Setiap kali agent mengeksekusi pekerjaan — fitur, fix, debug, refactor,
-config — ia wajib menutupnya dengan 1 file log di folder `docs/`
+config — ia wajib menutupnya dengan 1 file log di folder `docs/YYYYMMDD/`
 project tersebut. Satu eksekusi, satu file. Obrolan biasa dan plan
 tanpa eksekusi tidak dicatat.
 
 ## Contoh hasil
 
-Selesai fix login, agent menulis `docs/fix-login_20260926-143022.log`:
+Selesai fix login, agent menulis `docs/20260926/143022-fix-login.log`:
 
 ```
 Judul: Fix login null saat password kosong
@@ -42,11 +42,12 @@ Uji: POST /login tanpa password balas 400. npm test lolos.
 
 1. Plugin injeksi aturan docsnan ke system prompt setiap turn (bila mode `on`).
 2. Agent kerja seperti biasa.
-3. Saat eksekusi selesai, agent buat folder `docs/` bila belum ada,
-   lalu tulis 1 file baru `<slug>_YYYYMMDD-HHmmss.log`.
+3. Saat eksekusi selesai, agent buat folder `docs/YYYYMMDD/` via
+   `mkdir -p docs/$(date +%Y%m%d)`, lalu tulis 1 file baru `HHmmss-<slug>.log`.
 4. Slug dari judul tugas: lowercase, non-alfanumerik jadi `-`, maks 50 char.
-   Timestamp waktu lokal via `date +%Y%m%d-%H%M%S`.
-5. File log lama tidak pernah ditimpa. Selalu file baru.
+   Tanggal folder `date +%Y%m%d`, jam file `date +%H%M%S` (waktu lokal).
+5. File log lama tidak pernah ditimpa. Selalu file baru. Format lama flat
+   `docs/<slug>_YYYYMMDD-HHmmss.log` tetap terbaca, jangan hapus.
 
 Kapan wajib: ada file diubah/dibuat/dihapus, atau perintah
 build/test/deploy dijalankan. Kapan skip: obrolan biasa, tanya jawab,
@@ -106,16 +107,16 @@ Format lama tetap terbaca. Field tak dikenal diabaikan, tak pernah crash.
 
 ## Riwayat (log sebagai memori kerja)
 
-Log `docs/` juga jadi memori kerja ringan. Saat user tanya soal kerja
+Log `docs/YYYYMMDD/` juga jadi memori kerja ringan. Saat user tanya soal kerja
 lampau ("What did we change recently in authentication?", "Apa yang
 sudah difix kemarin?"), agent cek log dulu sebelum bongkar source tree:
 
 ```text
-Search docs/*.log
+Search docs/*/*.log + docs/*.log
 ↓
 Find relevant authentication logs
 ↓
-Sort newest first
+Sort newest first (path YYYYMMDD/HHmmss terurut waktu)
 ↓
 Read relevant logs
 ↓
@@ -125,7 +126,7 @@ Summarize the changes
 Aturan: deteksi intent riwayat dulu (recent/previous/last/yesterday /
 terakhir/kemarin/riwayat/sudah difix, plus `why was <file> changed`).
 Bila bukan pertanyaan riwayat,
-bagian ini dormant — `docs/` tak disentuh. Bila ya: `ls docs/*.log`
+bagian ini dormant — `docs/` tak disentuh. Bila ya: `ls docs/*/*.log docs/*.log`
 terbaru dulu, pilih maks 3 paling relevan (skor `Files` +5 / `Tags` +4 /
 nama/judul +3 / file di `Ubah` +2 / `Tipe` exact +2 / Ringkasan +1,
 baca maks 50 kandidat terbaru), baca hanya itu. Folder kosong: jawab terus
@@ -165,11 +166,12 @@ Butuh Node 18+. Tanpa deps tambahan.
 npm test
 ```
 
-25 test via `node:test`: routing perintah (bare/on/off/update/version),
+28 test via `node:test`: routing perintah (bare/on/off/update/version),
 deteksi versi, up-to-date, gagal update, intent riwayat ID+EN, seleksi
 log, newest-first, relevansi kata kunci, `docs/` kosong, log rusak,
 200 file, Files/Tags + alias EN, bobot Files, why-was file, recall log lama,
-dan request coding biasa yang tak picu retrieval.
+request coding biasa yang tak picu retrieval, layout harian nested +
+backward compat flat.
 
 ## Struktur
 
@@ -183,7 +185,7 @@ hooks/docsnan-command.js        # router bare/on/off/update/version
 hooks/docsnan-retrieve.js       # retrieval log deterministik + CLI
 hooks/docsnan-update.js         # cek/update versi + CLI
 test/                           # node:test, tanpa framework
-docs/                           # contoh log eksekusi
+docs/YYYYMMDD/                  # log eksekusi harian (flat lama tetap terbaca)
 ```
 
 ## Lisensi

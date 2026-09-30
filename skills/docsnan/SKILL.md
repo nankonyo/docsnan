@@ -1,7 +1,7 @@
 ---
 name: docsnan
 description: >
-  Wajibkan 1 tugas = 1 file docs/*.log bernama <slug>_YYYYMMDD-HHmmss.log.
+  Wajibkan 1 tugas = 1 file docs/YYYYMMDD/HHmmss-<slug>.log.
   Berlaku untuk semua jenis tugas: fitur, fix, debug, refactor, tugas lain.
   Pakai /docsnan on | /docsnan off. Isi singkat tapi lengkap dan mudah dipahami.
 argument-hint: "[on|off]"
@@ -32,13 +32,15 @@ tidak ada log.
 
 ## Lokasi dan nama
 
-- Folder: `docs/` di root project. Buat bila belum ada.
-- Nama: `<slug>_YYYYMMDD-HHmmss.log`
-- Contoh: `fix-login_20260926-143022.log`, `tambah-cache-api_20260926-150310.log`
+- Folder: `docs/YYYYMMDD/` di root project. Buat via `mkdir -p docs/$(date +%Y%m%d)`.
+- Nama: `HHmmss-<slug>.log`. Full: `docs/20260926/143022-fix-login.log`.
+- Contoh: `docs/20260926/143022-fix-login.log`, `docs/20260926/150310-tambah-cache-api.log`.
 - Slug: dari judul tugas. Lowercase. Spasi dan non-alfanumerik jadi `-`.
   Maks 50 char. Contoh: "Fix Login Null" jadi `fix-login-null`.
-- Timestamp: waktu lokal saat tugas selesai. Ambil via `date +%Y%m%d-%H%M%S`.
+- Tanggal folder via `date +%Y%m%d`, jam file via `date +%H%M%S` (waktu lokal).
 - Selalu file baru. Jangan timpa atau append ke log lama.
+- Format lama flat `docs/<slug>_YYYYMMDD-HHmmss.log` tak ditulis lagi,
+  tapi tetap dibaca saat retrieval (backward compat). Jangan hapus log lama.
 
 ## Cakupan
 
@@ -98,9 +100,9 @@ kemarin, terakhir, riwayat, "sudah difix?", "pernah dikerjakan?",
 
 Alur wajib (ringan, offline, tanpa vector DB):
 
-1. `ls docs/*.log` terbaru dulu (nama `<slug>_YYYYMMDD-HHmmss.log`
-   sudah terurut waktu). Bila folder kosong: jawab terus terang,
-   lanjut ke kode/git.
+1. `ls docs/*/*.log docs/*.log` terbaru dulu (path `YYYYMMDD/HHmmss-<slug>.log`
+   sudah terurut waktu; flat lama `<slug>_YYYYMMDD-HHmmss.log` ikut terbaca).
+   Bila kosong: jawab terus terang, lanjut ke kode/git.
 2. Pilih maks 3 log relevan via cocok `Files` (+5) / `Tags` (+4) /
    nama/judul (+3) / file di `Ubah` (+2) / `Tipe` exact (+2) / Ringkasan (+1).
    Contoh: tanya auth → prioritaskan `Files/Tags` berisi `auth|login`.

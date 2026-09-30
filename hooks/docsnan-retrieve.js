@@ -59,10 +59,38 @@ function isHistoryQuery(query) {
   return HISTORY_PATTERNS.some((re) => re.test(query));
 }
 
-// `fix-login_20260926-143022.log` -> 20260926143022 (number, 0 if no match).
+// `fix-login_20260926-143022.log` (lama, flat) -> 20260926143022.
+// `20260926/143022-fix-login.log` (baru, harian) -> 20260926143022.
+// Terima full path, relative, atau basename. 0 bila tak cocok.
+function timestampFromLogPath(logPath) {
+  const p = String(logPath || '');
+  let m = p.match(/(\d{8})\/(\d{6})-[^/]+\.log$/);
+  if (m) return Number(m[1] + m[2]);
+  m = String(path.basename(p)).match(/_(\d{8})-(\d{6})\.log$/);
+  if (m) return Number(m[1] + m[2]);
+  m = String(path.basename(p)).match(/^(\d{6})-[^/]+\.log$/);
+  if (m) {
+    const d = p.match(/(\d{8})/);
+    return d ? Number(d[1] + m[1]) : 0;
+  }
+  return 0;
+}
+
+// Alias lama, tetap diekspor agar tes/skrip lama tak rusak.
 function timestampFromFilename(filename) {
-  const m = String(path.basename(filename)).match(/_(\d{8})-(\d{6})\.log$/);
-  return m ? Number(m[1] + m[2]) : 0;
+  return timestampFromLogPath(filename);
+}
+
+// Ambil slug dari nama file lama maupun baru.
+// lama: `fix-login_20260926-143022.log` -> `fix-login`
+// baru: `143022-fix-login.log` -> `fix-login`
+function slugFromLogName(name) {
+  const base = String(path.basename(name || ''));
+  let m = base.match(/^(\d{6})-(.+)\.log$/);
+  if (m) return m[2];
+  m = base.match(/^(.+?)_\d{8}-\d{6}\.log$/);
+  if (m) return m[1];
+  return base.replace(/\.log$/, '');
 }
 
 // Tolerant 6+2-field parse. Never throws; malformed logs yield empty fields.
@@ -130,17 +158,36 @@ function scoreLog(meta, queryTokens) {
   return score;
 }
 
-// List log files newest-first by filename timestamp (no content read).
+// List log newest-first by path timestamp (no content read).
+// Dukung dua layout: lama flat `docs/<slug>_YYYYMMDD-HHmmss.log`
+// dan baru harian `docs/YYYYMMDD/HHmmss-<slug>.log`.
+// name = path relatif dari dir (mis. `20260926/143022-fix-login.log`).
 function listLogsNewestFirst(dir) {
-  let files = [];
+  let entries = [];
   try {
-    files = fs.readdirSync(dir).filter((f) => f.endsWith('.log'));
+    entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch (e) {
     return [];
   }
-  return files
-    .map((f) => ({ file: path.join(dir, f), name: f, ts: timestampFromFilename(f) }))
-    .sort((a, b) => b.ts - a.ts || (a.name < b.name ? 1 : -1));
+  const out = [];
+  for (const e of entries) {
+    if (e.isFile() && e.name.endsWith('.log')) {
+      const rel = e.name;
+      out.push({ file: path.join(dir, rel), name: rel, ts: timestampFromLogPath(rel) });
+    } else if (e.isDirectory() && /^\d{8}$/.test(e.name)) {
+      // ponytail: 1 level tanggal cukup, tanpa walk rekursif mahal.
+      let inner = [];
+      try {
+        inner = fs.readdirSync(path.join(dir, e.name));
+      } catch (err) { continue; }
+      for (const f of inner) {
+        if (!f.endsWith('.log')) continue;
+        const rel = e.name + '/' + f;
+        out.push({ file: path.join(dir, rel), name: rel, ts: timestampFromLogPath(rel) });
+      }
+    }
+  }
+  return out.sort((a, b) => b.ts - a.ts || (a.name < b.name ? 1 : -1));
 }
 
 // Main entry: return up to `limit` most relevant logs, newest-first on ties.
@@ -151,7 +198,7 @@ function selectLogs({ dir = 'docs', query = '', limit = DEFAULT_LIMIT } = {}) {
   const tokens = tokenize(query);
   const candidates = listed.slice(0, MAX_CANDIDATE_READ);
   const scored = candidates.map((c, order) => {
-    let meta = { slug: c.name.replace(/_\d{8}-\d{6}\.log$/, ''), title: '', type: '', summary: '', changed: [], files: [], tags: [] };
+    let meta = { slug: slugFromLogName(c.name), title: '', type: '', summary: '', changed: [], files: [], tags: [] };
     try {
       const parsed = parseLogContent(fs.readFileSync(c.file, 'utf8'));
       meta = { ...meta, title: parsed.title, type: parsed.type, summary: parsed.summary, changed: parsed.changed, files: parsed.files, tags: parsed.tags };
@@ -171,6 +218,8 @@ module.exports = {
   isHistoryQuery,
   tokenize,
   timestampFromFilename,
+  timestampFromLogPath,
+  slugFromLogName,
   parseLogContent,
   scoreLog,
   listLogsNewestFirst,

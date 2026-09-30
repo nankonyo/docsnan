@@ -1,0 +1,9 @@
+Judul: Publish docsnan 0.4.0 sukses latest
+Tipe: lainnya
+Waktu: 2026-09-30T10:51:47+07:00
+Files: package.json
+Tags: docsnan, npm, publish
+Ringkasan: docsnan@0.4.0 terbit ke npm dan jadi dist-tag latest. Isinya layout harian docs/YYYYMMDD.
+Ubah:
+- package.json: tak diubah saat publish, versi 0.4.0 yang terbit.
+Uji: npm view docsnan version balas 0.4.0. time 0.4.0 = 2026-09-30T03:50:13Z. dist-tags latest 0.4.0. Deskripsi registry sudah docs/YYYYMMDD.

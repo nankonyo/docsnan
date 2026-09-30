@@ -8,6 +8,9 @@ const {
   parseLogContent,
   selectLogs,
   listLogsNewestFirst,
+  timestampFromFilename,
+  timestampFromLogPath,
+  slugFromLogName,
 } = require('../hooks/docsnan-retrieve');
 
 function mktmp() {
@@ -15,8 +18,10 @@ function mktmp() {
 }
 
 function write(dir, name, body) {
-  fs.writeFileSync(path.join(dir, name), body);
-  return path.join(dir, name);
+  const full = path.join(dir, name);
+  fs.mkdirSync(path.dirname(full), { recursive: true });
+  fs.writeFileSync(full, body);
+  return full;
 }
 
 const LOG = (title, type, changed) =>
@@ -158,4 +163,32 @@ test('specific old log beyond 20 newest still found', () => {
   write(dir, 'ancient-auth_20260901-080000.log', 'Judul: Ancient auth\nTipe: fix\nWaktu: 2026-09-01 08:00:00\nFiles: auth/ancient.js\nTags: auth\nRingkasan: lama.\nUbah:\n- auth/ancient.js: guard lama.\nUji: ok.\n');
   const hits = selectLogs({ dir, query: 'What did we change in auth ancient?', limit: 3 });
   assert.ok(hits.some((h) => h.name.startsWith('ancient-auth')));
+});
+
+// --- v0.4: layout harian docs/YYYYMMDD/HHmmss-<slug>.log + backward compat ---
+test('timestamp + slug parse layout baru dan lama', () => {
+  assert.equal(timestampFromLogPath('20260926/143022-fix-login.log'), 20260926143022);
+  assert.equal(timestampFromLogPath('fix-login_20260926-143022.log'), 20260926143022);
+  assert.equal(timestampFromFilename('20260926/143022-fix-login.log'), 20260926143022);
+  assert.equal(slugFromLogName('143022-fix-login.log'), 'fix-login');
+  assert.equal(slugFromLogName('fix-login_20260926-143022.log'), 'fix-login');
+});
+
+test('list nested + flat newest-first', () => {
+  const dir = mktmp();
+  write(dir, 'fix-lama_20260925-100000.log', LOG('Lama', 'fix', 'a.js.'));
+  fs.mkdirSync(path.join(dir, '20260926'));
+  write(dir, '20260926/110000-baru.log', LOG('Baru', 'fix', 'b.js.'));
+  const listed = listLogsNewestFirst(dir).map((l) => l.name);
+  assert.deepEqual(listed, ['20260926/110000-baru.log', 'fix-lama_20260925-100000.log']);
+});
+
+test('select campuran nested + flat tetap relevan', () => {
+  const dir = mktmp();
+  write(dir, 'cache-lama_20260925-100000.log', LOG('Cache lama', 'fitur', 'api/cache.js: lru.'));
+  fs.mkdirSync(path.join(dir, '20260926'));
+  write(dir, '20260926/110000-update-auth.log', LOG('Update auth', 'fix', 'auth/login.js: guard.'));
+  const hits = selectLogs({ dir, query: 'What did we change in auth/login.js?', limit: 2 });
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].name, '20260926/110000-update-auth.log');
 });

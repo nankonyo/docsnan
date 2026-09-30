@@ -1,0 +1,9 @@
+Judul: Publish docsnan 0.4.0 ke npm gagal auth
+Tipe: lainnya
+Waktu: 2026-09-30T10:44:20+07:00
+Files: package.json
+Tags: docsnan, npm, publish
+Ringkasan: Publish 0.4.0 gagal. Token npm di ~/.npmrc ditolak registry (401). Registry masih 0.3.0, tak ada versi setengah terbit.
+Ubah:
+- package.json: tak diubah, versi lokal tetap 0.4.0 siap publish.
+Uji: npm test 28/28 lolos. npm pack --dry-run 12 file ok. npm whoami 401, npm publish 404 no-permission. npm view docsnan version tetap 0.3.0.

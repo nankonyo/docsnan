@@ -1,0 +1,10 @@
+Judul: Publish docsnan v0.3.0 ke npm + tag git
+Tipe: lainnya
+Waktu: 2026-09-27T11:07:38+07:00
+Files: package.json, hooks/docsnan-update.js
+Tags: publish, npm, release
+Ringkasan: Paket docsnan v0.3.0 diterbitkan ke npm registry dan tag v0.3.0 di-push ke GitHub. Updater internal sekarang lapor up-to-date via npm.
+Ubah:
+- package.json: versi 0.3.0 terbit ke npm sebagai latest (12 file, tanpa perubahan kode).
+- .git: tag v0.3.0 dibuat dan di-push ke origin.
+Uji: npm view docsnan version balas 0.3.0. hooks/docsnan-update.js check balas up-to-date source npm. npm test 25 lolos sebelum publish. git ls-remote tampil refs/tags/v0.3.0.

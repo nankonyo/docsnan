@@ -1,0 +1,9 @@
+Judul: Plugin docsnan opencode sudah 0.4.0
+Tipe: lainnya
+Waktu: 2026-09-30T10:52:54+07:00
+Files: .opencode/plugins/docsnan.mjs
+Tags: docsnan, opencode, plugin
+Ringkasan: Opencode global load docsnan via path checkout, bukan npm. Checkout sudah 0.4.0, jadi plugin otomatis terbaru tanpa install.
+Ubah:
+- .opencode/plugins/docsnan.mjs: tak diubah, path di opencode.json tetap ke checkout.
+Uji: node --check plugin ok. hooks/docsnan-update.js check balas installed 0.4.0 latest 0.4.0 up-to-date. version balas 0.4.0.

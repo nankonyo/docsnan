@@ -10,8 +10,8 @@ const SKILL_PATH = path.join(__dirname, '..', 'skills', 'docsnan', 'SKILL.md');
 
 function getFallbackInstructions() {
   return 'DOCSNAN MODE ACTIVE — level: on\n\n' +
-    'Tutup setiap eksekusi pekerjaan dengan 1 file baru di docs/<slug>_YYYYMMDD-HHmmss.log. ' +
-    'Buat folder docs bila belum ada. Jangan timpa log lama.\n' +
+    'Tutup setiap eksekusi pekerjaan dengan 1 file baru di docs/YYYYMMDD/HHmmss-<slug>.log. ' +
+    'Buat folder via `mkdir -p docs/$(date +%Y%m%d)`. Jangan timpa log lama. Format lama docs/<slug>_YYYYMMDD-HHmmss.log tetap terbaca.\n' +
     'Hanya saat eksekusi (ada file diubah atau perintah build/test/deploy dijalankan). ' +
     'Skip untuk obrolan biasa, tanya jawab, plan tanpa eksekusi, dan baca kode tanpa perubahan.\n' +
     'Isi singkat, poin penting saja: Judul, Tipe, Waktu ISO, Files, Tags, Ringkasan, Ubah (`path: alasan`), Uji.';

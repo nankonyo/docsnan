@@ -1,0 +1,9 @@
+Judul: Retry publish 0.4.0 terhalang OTP
+Tipe: lainnya
+Waktu: 2026-09-30T10:47:34+07:00
+Files: package.json
+Tags: docsnan, npm, publish
+Ringkasan: Login npm sudah valid (nankonyo). Retry publish 0.4.0 terhalang 2FA, perlu OTP browser. User pilih publish manual di terminal.
+Ubah:
+- package.json: tak diubah, versi lokal tetap 0.4.0 siap publish.
+Uji: npm whoami balas nankonyo. npm publish balas EOTP requires one-time-password. Registry masih 0.3.0.

@@ -1,0 +1,17 @@
+Judul: Pindah docs ke layout harian YYYYMMDD
+Tipe: fitur
+Waktu: 2026-09-30T10:40:13+07:00
+Files: hooks/docsnan-retrieve.js, skills/docsnan/SKILL.md, AGENTS.md, .opencode/command/docsnan.md, hooks/docsnan-instructions.js, README.md, package.json, test/retrieve.test.js
+Tags: docsnan, docs, retrieval
+Ringkasan: Folder docs flat terlalu gemuk. Pindah ke docs/YYYYMMDD/HHmmss-<slug>.log agar list per hari kecil dan tetap terurut waktu.
+Ubah:
+- hooks/docsnan-retrieve.js: list rekursif 1 level tanggal + parse timestamp/slug dua format, flat lama tetap terbaca.
+- skills/docsnan/SKILL.md: lokasi dan nama jadi docs/YYYYMMDD/HHmmss-<slug>.log via mkdir -p docs/$(date +%Y%m%d).
+- AGENTS.md: format nama baru + catatan backward compat flat lama.
+- .opencode/command/docsnan.md: instruksi tulis dan riwayat pakai docs/*/*.log + docs/*.log.
+- hooks/docsnan-instructions.js: fallback ikuti layout harian.
+- README.md: contoh, cara kerja, riwayat, struktur pakai layout harian.
+- package.json: bump 0.3.0 -> 0.4.0.
+- test/retrieve.test.js: 3 tes baru timestamp/slug, list nested+flat, select campuran.
+- docs/: migrasi 9 log flat lama ke docs/20260926/ dan docs/20260927/.
+Uji: npm test 28/28 lolos. CLI retrieve --dir docs newest-first jalan di layout nested.
