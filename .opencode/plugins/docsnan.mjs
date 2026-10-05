@@ -1,10 +1,15 @@
-// docsnan — OpenCode plugin (mirip .opencode/plugins/ponytail.mjs).
+// docsnan — OpenCode plugin (dual API, satu file).
 //
-// - Daftarkan slash command + skills dir via `config` hook.
-// - Injeksi SKILL.md ke system prompt tiap turn bila mode on.
-// - Persist `/docsnan on|off` via `command.execute.before`.
+// - V2 (opencode 2.x): pakai `id` + `setup` — daftar skill/command via
+//   transform, injeksi SKILL.md via `ctx.session.hook('context')`.
+// - V1 (opencode 1.x): pakai `server()` — `config` hook,
+//   `experimental.chat.system.transform`, `command.execute.before`.
+// - Persist `/docsnan on|off` di `<config>/opencode/.docsnan-active`,
+//   dibaca kedua API bila mode sama.
 //
-// Pakai di opencode.json: { "plugin": ["docsnan"] }
+// Pakai di opencode.json (V2):
+//   { "plugins": ["docsnan"] }                       (dari npm)
+//   { "plugins": ["/abs/path/docsnan-checkout"] }     (dari checkout, dir bukan file)
 
 import { createRequire } from 'module';
 import fs from 'fs';
@@ -48,7 +53,65 @@ export function parseCommandFile(filePath) {
   return { description, template: match[2].trim() };
 }
 
-export default async ({ client } = {}) => {
+// Frontmatter flat + block scalar (`>`/`|`) — bentuk yang dipakai SKILL.md.
+function frontmatterField(frontmatter, key) {
+  const lines = frontmatter.split(/\r?\n/);
+  const at = lines.findIndex((line) => line.startsWith(key + ':'));
+  if (at === -1) return undefined;
+  const value = lines[at].slice(key.length + 1).trim();
+  if (value[0] !== '>' && value[0] !== '|') return value;
+  const block = [];
+  for (const line of lines.slice(at + 1)) {
+    if (line.trim() && !/^\s/.test(line)) break;
+    block.push(line.trim());
+  }
+  while (block.length && !block[block.length - 1]) block.pop();
+  const joined = block.join(value[0] === '|' ? '\n' : ' ');
+  return value.endsWith('-') ? joined : joined + '\n';
+}
+
+function readSkill() {
+  const file = path.resolve(__dirname, '../../skills/docsnan/SKILL.md');
+  try {
+    const content = fs.readFileSync(file, 'utf8');
+    const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---[^\S\n]*\r?\n?([\s\S]*)$/);
+    if (!match) return null;
+    return {
+      id: 'docsnan',
+      name: frontmatterField(match[1], 'name') || 'docsnan',
+      description:
+        frontmatterField(match[1], 'description') ||
+        'Wajibkan 1 tugas = 1 file docs/YYYYMMDD/HHmmss-<slug>.log.',
+      path: file,
+      content: match[2],
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+function readCommands() {
+  const dir = path.join(__dirname, '..', 'command');
+  try {
+    return fs
+      .readdirSync(dir)
+      .filter((file) => file.endsWith('.md'))
+      .map((file) => {
+        const parsed = parseCommandFile(path.join(dir, file));
+        return parsed && { name: path.basename(file, '.md'), ...parsed };
+      })
+      .filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+
+function versionTag() {
+  return `(docsnan ${readMode()} v${getInstalledVersion() || '?'})`;
+}
+
+// V1: implementasi lama, tak diubah. V2: baca `setup` di export bawah.
+async function server({ client } = {}) {
   const log = (level, message) => {
     try { client && client.app && client.app.log({ body: { service: 'docsnan', level, message } }); } catch (e) {}
   };
@@ -58,14 +121,9 @@ export default async ({ client } = {}) => {
   return {
     config: async (config) => {
       if (!config.command) config.command = {};
-      const commandDir = path.join(__dirname, '..', 'command');
-      try {
-        for (const file of fs.readdirSync(commandDir).filter((f) => f.endsWith('.md'))) {
-          const name = path.basename(file, '.md');
-          const parsed = parseCommandFile(path.join(commandDir, file));
-          if (parsed) config.command[name] = parsed;
-        }
-      } catch (e) {}
+      for (const command of readCommands()) {
+        config.command[command.name] = { description: command.description, template: command.template };
+      }
 
       config.skills = config.skills || {};
       config.skills.paths = config.skills.paths || [];
@@ -109,4 +167,60 @@ export default async ({ client } = {}) => {
       }
     },
   };
+}
+
+export default {
+  id: 'docsnan',
+
+  async setup(ctx) {
+    const skill = readSkill();
+    if (skill) {
+      await ctx.skill.transform((editor) => {
+        editor.add(skill);
+      });
+    }
+
+    const commands = readCommands();
+    await ctx.command.transform((editor) => {
+      for (const command of commands) {
+        editor.add({
+          name: command.name,
+          description: command.description,
+          execute: async ({ sessionID, prompt, delivery }) => {
+            const routed = routeCommand(prompt.text || '');
+            // on/off persist di sini; pesan berikut baca mode baru.
+            if (routed.action === 'mode') writeMode(routed.mode);
+            let extra = versionTag();
+            if (routed.action === 'update') {
+              const before = checkUpdate();
+              if (!before.latest) {
+                extra = `docsnan v${before.installed || '?'}: latest unknown (offline/unpublished), kept.`;
+              } else if (!before.needed) {
+                extra = `docsnan already up to date (${before.installed}).`;
+              } else {
+                const r = performUpdate();
+                extra = r.ok ? r.message : 'docsnan update failed: ' + r.error;
+              }
+            } else if (routed.action === 'unknown') {
+              extra += `. Unknown arg "${routed.arg}". Use on|off|update|version.`;
+            }
+            await ctx.session.prompt({
+              ...prompt,
+              sessionID,
+              text: command.template.replaceAll('$ARGUMENTS', prompt.text || '') + `\n\n${extra}`,
+              delivery,
+            });
+          },
+        });
+      }
+    });
+
+    await ctx.session.hook('context', (event) => {
+      const mode = readMode();
+      if (mode === 'off') return;
+      event.system.push({ type: 'text', text: getDocsnanInstructions(mode) });
+    });
+  },
+
+  server,
 };

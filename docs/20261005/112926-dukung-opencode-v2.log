@@ -1,0 +1,12 @@
+Judul: Docsnan dukung opencode v2, v0.5.0
+Tipe: fitur
+Waktu: 2026-10-05T11:29:26+07:00
+Files: .opencode/plugins/docsnan.mjs, test/plugin-v2.test.js, package.json, README.md
+Tags: docsnan, opencode, plugin, v2
+Ringkasan: Plugin docsnan hanya V1 (config hook + experimental hook), tak jalan di opencode v2. Ditulis ulang dual API satu file ala ponytail.
+Ubah:
+- .opencode/plugins/docsnan.mjs: tambah id + setup (skill/command transform, hook context), server() V1 utuh tak diubah.
+- test/plugin-v2.test.js: 5 test (id/setup/server, registrasi, persist on/off, injeksi on/silent off, hook V1).
+- package.json: versi 0.5.0, hapus self-dependency docsnan.
+- README.md: seksi install V2 (plugins key, entry direktori) + catatan 1.x.
+Uji: npm test 33 lolos, 0 gagal.

@@ -1,8 +1,13 @@
 {
   "name": "docsnan",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Wajibkan 1 tugas = 1 file docs/YYYYMMDD/*.log. Mirip ponytail/caveman untuk opencode.",
-  "keywords": ["opencode-plugin", "opencode", "docsnan", "skills"],
+  "keywords": [
+    "opencode-plugin",
+    "opencode",
+    "docsnan",
+    "skills"
+  ],
   "license": "MIT",
   "author": {
     "name": "nankonyo"

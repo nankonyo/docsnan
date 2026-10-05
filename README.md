@@ -56,25 +56,37 @@ perubahan file dan tidak ada perintah = tidak ada log.
 
 ## Install
 
-### OpenCode (npm)
+Satu file plugin dukung OpenCode 1.x (`server()`) dan 2.x (`id`+`setup`).
+
+### OpenCode 2.x (npm)
 
 ```bash
 npm i docsnan
 ```
 
 ```json
-{ "plugin": ["docsnan"] }
+{ "plugins": ["docsnan"] }
 ```
 
-### OpenCode (dari checkout)
+### OpenCode 2.x (dari checkout)
+
+Entry harus direktori, bukan file:
 
 ```json
-{ "plugin": ["./.opencode/plugins/docsnan.mjs"] }
+{ "plugins": ["/abs/path/docsnan-checkout"] }
 ```
 
 Path `./` relatif terhadap `opencode.json` project. Untuk satu checkout
-dipakai banyak project, isi path absolut ke file `.mjs` (ia temukan
-`hooks/` dan `skills/` relatif ke lokasinya sendiri).
+dipakai banyak project, isi path absolut ke root checkout (ia temukan
+`hooks/` dan `skills/` relatif ke lokasi plugin).
+
+### OpenCode 1.x
+
+```json
+{ "plugin": ["docsnan"] }
+```
+
+atau dari checkout: `{ "plugin": ["./.opencode/plugins/docsnan.mjs"] }`.
 
 ## Perintah
 
