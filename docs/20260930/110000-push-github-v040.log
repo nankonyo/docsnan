@@ -1,0 +1,10 @@
+Judul: Push GitHub main + tag v0.4.0
+Tipe: lainnya
+Waktu: 2026-09-30T11:00:00+07:00
+Files: package.json, skills/docsnan/SKILL.md, hooks/docsnan-retrieve.js
+Tags: docsnan, github, release
+Ringkasan: Commit 0.4.0 dan push ke GitHub. Remote main dan tag v0.4.0 kini sama dengan lokal.
+Ubah:
+- git: commit 78a95df feat layout harian + retrieval nested, 22 file (7 ubahan, 9 rename log, 6 log baru).
+- git: push main 7be1e62..78a95df dan tag baru v0.4.0.
+Uji: ls-remote balas 78a95df untuk main dan v0.4.0. git status bersih, in-sync origin/main.

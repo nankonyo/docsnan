@@ -1,0 +1,14 @@
+Judul: Perbaiki kepatuhan AI terhadap plugin docsnan di OpenCode
+Tipe: fix
+Waktu: 2026-10-06T07:00:00+07:00
+Files: hooks/docsnan-instructions.js, skills/docsnan/SKILL.md, .opencode/plugins/docsnan.mjs, .opencode/command/docsnan.md, AGENTS.md, test/instructions.test.js
+Tags: docsnan, opencode, plugin, compliance
+Ringkasan: AI terima injeksi DOCSNAN MODE ACTIVE tiap turn tapi sering selesai tanpa tulis log. Injeksi full SKILL.md panjang pasif terkubur di system prompt, tanpa enforcement, deskripsi skill tanpa trigger, wrapper global divergen.
+Ubah:
+- hooks/docsnan-instructions.js: injeksi dipendekkan jadi MUST imperatif <800 char, tambah INCOMPLETE clause, bukan full SKILL.md.
+- skills/docsnan/SKILL.md: description tambah trigger after-edit/build/test, body tambah MANDATORY FINAL STEP di baris atas.
+- .opencode/plugins/docsnan.mjs: tambah tool.execute.after reminder + experimental.session.compacting + session.hook compaction V2.
+- .opencode/command/docsnan.md, AGENTS.md: wording MUST/INCOMPLETE.
+- ~/.config/opencode/plugins/docsnan/index.js: sync instruksi pendek, perbaiki parse description campur argument-hint, tambah compaction hook.
+- test/instructions.test.js: test baru injeksi pendek/imperatif/off-diam.
+Uji: npm test lolos 36/36. node --check plugin + wrapper OK. setup() registrasi skill/command/context+compaction OK.

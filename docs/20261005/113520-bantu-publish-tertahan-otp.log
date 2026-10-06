@@ -1,0 +1,9 @@
+Judul: Bantu publish docsnan 0.5.0, tertahan OTP
+Tipe: lainnya
+Waktu: 2026-10-05T11:35:20+07:00
+Files: -
+Tags: docsnan, npm, publish, otp
+Ringkasan: Login npm user sudah masuk (nankonyo). Coba npm publish 0.5.0, registry minta OTP via browser, tak bisa diselesaikan dari sesi ini.
+Ubah:
+- (tidak ada): npm test 33 lolos lalu npm publish, gagal di EOTP.
+Uji: npm test 33/33 lolos. npm publish balas EOTP butuh one-time password + URL auth browser.

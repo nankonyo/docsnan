@@ -1,14 +1,19 @@
 ---
 name: docsnan
 description: >
-  Wajibkan 1 tugas = 1 file docs/YYYYMMDD/HHmmss-<slug>.log.
-  Berlaku untuk semua jenis tugas: fitur, fix, debug, refactor, tugas lain.
-  Pakai /docsnan on | /docsnan off. Isi singkat tapi lengkap dan mudah dipahami.
+  Mandatory log after EVERY execution task: after creating/editing/deleting files,
+  after build/test/deploy, after fix/feature/refactor/config/docs.
+  Creates 1 file docs/YYYYMMDD/HHmmss-<slug>.log. Skip chat/plan/read-only.
+  Use /docsnan on | /docsnan off.
 argument-hint: "[on|off]"
 license: MIT
 ---
 
 # Docsnan
+
+MANDATORY FINAL STEP — DO NOT SKIP. After every execution task, you MUST
+create 1 NEW log file before finishing. If you edited files but created NO
+log, the task is INCOMPLETE — create the log now.
 
 Tutup setiap eksekusi pekerjaan dengan dokumentasi. 1 eksekusi = 1 file.
 

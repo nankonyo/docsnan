@@ -1,0 +1,9 @@
+Judul: Cek auth npm untuk publish docsnan 0.5.0
+Tipe: lainnya
+Waktu: 2026-10-05T11:30:16+07:00
+Files: -
+Tags: docsnan, npm, publish
+Ringkasan: User minta publish 0.5.0 ke npm. Cek npm whoami balas 401, registry masih 0.4.0. Publish tak bisa tanpa login user.
+Ubah:
+- (tidak ada): hanya baca status auth + versi registry.
+Uji: npm whoami 401 Unauthorized. npm view docsnan version = 0.4.0.

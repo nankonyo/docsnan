@@ -1,0 +1,9 @@
+Judul: Verifikasi docsnan 0.5.0 terbit di npm
+Tipe: lainnya
+Waktu: 2026-10-05T11:36:20+07:00
+Files: -
+Tags: docsnan, npm, publish
+Ringkasan: Error "cannot publish over 0.5.0" artinya publish user tadi sukses. Registry latest kini 0.5.0. Tarball dicek berisi plugin V2.
+Ubah:
+- (tidak ada): hanya verifikasi registry + isi tarball.
+Uji: npm view latest 0.5.0. Unduh tarball, .opencode/plugins/docsnan.mjs ada dan memuat id+setup.

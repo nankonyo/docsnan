@@ -18,6 +18,6 @@ Switch docsnan. Subcommand = $ARGUMENTS (satu kata, case-insensitive).
   Detail: `node <docsnan>/hooks/docsnan-update.js [version|check|update]`.
 - Selain itu: abaikan, beri tahu pemakaian valid.
 
-When on: tutup setiap eksekusi pekerjaan (fitur, fix, debug, refactor, config, docs, lainnya) dengan 1 file baru docs/YYYYMMDD/HHmmss-<slug>.log. Buat folder via `mkdir -p docs/$(date +%Y%m%d)`. Format lama flat docs/<slug>_YYYYMMDD-HHmmss.log tetap terbaca, jangan hapus. Skip obrolan biasa, tanya jawab, plan tanpa eksekusi, dan baca kode tanpa perubahan. Isi singkat 6 wajib + 2 opsional mesin: Judul, Tipe, Waktu ISO, Files, Tags, Ringkasan, Ubah (`path: alasan`), Uji.
+When on (MANDATORY FINAL STEP, DO NOT SKIP): after EVERY execution task (fitur, fix, debug, refactor, config, docs, lainnya) you MUST create 1 NEW file docs/YYYYMMDD/HHmmss-<slug>.log before finishing. `mkdir -p docs/$(date +%Y%m%d)`. Never overwrite old logs. Format lama flat docs/<slug>_YYYYMMDD-HHmmss.log tetap terbaca, jangan hapus. Skip ONLY obrolan biasa, tanya jawab, plan tanpa eksekusi, baca kode tanpa perubahan. If you edited files but created NO log, task is INCOMPLETE — create log now. Isi singkat 6 wajib + 2 opsional mesin: Judul, Tipe, Waktu ISO, Files, Tags, Ringkasan, Ubah (`path: alasan`), Uji.
 
 Riwayat: untuk pertanyaan soal kerja lampau (recent/previous/last/yesterday/terakhir/kemarin/riwayat/sudah difix), cari docs/*/*.log + docs/*.log terbaru dulu, baca maks 3 yang relevan, jangan load semua log. Detail di SKILL.md bagian Riwayat.

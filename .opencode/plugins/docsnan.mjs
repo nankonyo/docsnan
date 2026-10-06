@@ -166,6 +166,27 @@ async function server({ client } = {}) {
         log('info', 'docsnan: unknown arg "' + routed.arg + '". Use on|off|update|version.');
       }
     },
+
+    // Reminder pasca-tool: muncul di hasil tool agar AI tidak lupa log.
+    'tool.execute.after': async (input, output) => {
+      try {
+        if (readMode() === 'off') return;
+        const tool = String((input && input.tool) || '').toLowerCase();
+        if (!/edit|write|apply|patch|bash|shell|exec/.test(tool)) return;
+        if (output && typeof output.output === 'string' && !/docsnan reminder/i.test(output.output)) {
+          output.output += '\n\n[docsnan reminder: if files changed, write 1 NEW docs/YYYYMMDD/HHmmss-<slug>.log before finishing.]';
+        }
+      } catch (e) {}
+    },
+
+    'experimental.session.compacting': async (_input, output) => {
+      try {
+        if (readMode() === 'off') return;
+        if (output && Array.isArray(output.context)) {
+          output.context.push('docsnan: preserve pending log duty across compaction — unlogged file changes still need 1 NEW docs/YYYYMMDD/HHmmss-<slug>.log.');
+        }
+      } catch (e) {}
+    },
   };
 }
 
@@ -220,6 +241,18 @@ export default {
       if (mode === 'off') return;
       event.system.push({ type: 'text', text: getDocsnanInstructions(mode) });
     });
+
+    // Preserve log duty across compaction summaries (best-effort, shape-guarded).
+    try {
+      await ctx.session.hook('compaction', (event) => {
+        if (readMode() === 'off') return;
+        const note = 'docsnan: unlogged file changes still need 1 NEW docs/YYYYMMDD/HHmmss-<slug>.log after compaction.';
+        try {
+          if (event && Array.isArray(event.context)) event.context.push(note);
+          else if (event && Array.isArray(event.system)) event.system.push({ type: 'text', text: note });
+        } catch (e) {}
+      });
+    } catch (e) {}
   },
 
   server,
